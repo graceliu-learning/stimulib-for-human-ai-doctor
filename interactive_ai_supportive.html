@@ -3,7 +3,8 @@
 <title>Online Consultation</title>
 <style>
 * { box-sizing:border-box; }
-body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:#eef1f4; color:#1a1a1a; padding:20px 12px; }
+html,body { margin:0; padding:0; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:transparent; color:#1a1a1a; }
 .card { max-width:440px; margin:0 auto; background:#fff; border:1px solid #dfe3e8; border-radius:16px; overflow:hidden; }
 .banner { padding:12px 16px; background:#e8f2ff; border-bottom:1px solid #dbe7f5; font-size:12px; color:#0b4a8a; line-height:1.5; }
 .hdr { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #eee; background:#fafafa; }
@@ -14,7 +15,7 @@ body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 .av.ai { color:#0a84ff; }
 .hname { font-weight:600; font-size:14px; }
 .hsub { font-size:12px; color:#777; margin-top:1px; }
-.thread { padding:16px; display:flex; flex-direction:column; gap:11px; background:#fff; min-height:150px; }
+.thread { padding:16px; display:flex; flex-direction:column; gap:11px; background:#fff; }
 .sysline { align-self:center; font-size:11px; color:#999; text-align:center; }
 .pt { align-self:flex-end; max-width:82%; background:#0a84ff; color:#fff; padding:9px 12px; border-radius:14px 14px 4px 14px; font-size:13px; line-height:1.5; }
 .drow { display:flex; align-items:flex-end; gap:7px; max-width:90%; }
@@ -29,7 +30,7 @@ body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 .send:disabled { background:#c7c7cc; cursor:default; }
 .trans { padding:13px 16px; border-top:1px solid #eee; background:#fafafa; font-size:12px; color:#555; font-style:italic; line-height:1.5; display:none; }
 </style></head><body>
-<div class="card">
+<div class="card" id="card">
   <div class="banner"><span style='font-weight:600'>Provider: AI Health Assistant.</span> You are connected with an AI health assistant that provides health consultation based on clinical guidelines and the information you provide.</div>
   <div class="hdr"><div class='av av-lg ai'>&#129302;</div><div><div class="hname">AI Health Assistant</div><div class="hsub">Online consultation</div></div></div>
   <div class="thread" id="thread"><div class="sysline">You are chatting with an AI health assistant</div></div>
@@ -47,17 +48,24 @@ var doc2='That\'s totally fine, take your time. You\'re already doing the right 
 var W1=10000, W2=5000;
 var steps=[{who:'p',t:patient1},{who:'d',t:doc1,w:W1},{who:'p',t:patient2},{who:'d',t:doc2,w:W2}];
 var i=0, thread=document.getElementById('thread'), draft=document.getElementById('draft'), btn=document.getElementById('send'), trans=document.getElementById('trans');
-function pt(t){var d=document.createElement('div');d.className='pt';d.textContent=t;thread.appendChild(d);sc();}
-function typing(){var w=document.createElement('div');w.className='drow';w.id='typing';w.innerHTML=AV+'<div class="db">'+TYP+'</div>';thread.appendChild(w);sc();return w;}
-function db(t){var w=document.createElement('div');w.className='drow';w.innerHTML=AV+'<div class="db"></div>';w.lastChild.textContent=t;thread.appendChild(w);sc();}
-function sc(){window.scrollTo(0,document.body.scrollHeight);}
+function sendHeight(){
+  try {
+    var h=document.getElementById('card').offsetHeight+8;
+    parent.postMessage({stimHeight:h}, "*");
+  } catch(e){}
+}
+function pt(t){var d=document.createElement('div');d.className='pt';d.textContent=t;thread.appendChild(d);sendHeight();}
+function typing(){var w=document.createElement('div');w.className='drow';w.id='typing';w.innerHTML=AV+'<div class="db">'+TYP+'</div>';thread.appendChild(w);sendHeight();return w;}
+function db(t){var w=document.createElement('div');w.className='drow';w.innerHTML=AV+'<div class="db"></div>';w.lastChild.textContent=t;thread.appendChild(w);sendHeight();}
 function refresh(){
-  if(i>=steps.length){draft.textContent='';btn.disabled=true;trans.style.display='block';sc();return;}
+  if(i>=steps.length){draft.textContent='';btn.disabled=true;trans.style.display='block';sendHeight();return;}
   var s=steps[i];
   if(s.who==='p'){draft.textContent=s.t;btn.disabled=false;}
   else{draft.textContent='';btn.disabled=true;var tp=typing();setTimeout(function(){tp.remove();db(s.t);i++;refresh();},s.w);}
 }
 btn.onclick=function(){if(i>=steps.length||steps[i].who!=='p')return;pt(steps[i].t);i++;refresh();};
+window.addEventListener('load',sendHeight);
+setInterval(sendHeight, 500);
 refresh();
 </script>
 </body></html>
