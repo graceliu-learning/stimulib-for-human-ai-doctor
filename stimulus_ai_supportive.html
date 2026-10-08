@@ -42,7 +42,6 @@
   <div class="stim-thread"><div class="stim-sys">You are connected with an AI doctor</div></div>
   <div class="stim-composer"><div class="stim-draft"></div><button type="button" class="stim-send" aria-label="Send">&#10148;</button></div>
   <div class="stim-hint">Click the send button to send this message.</div>
-  <div class="stim-closing">Now, imagine you are the patient in this consultation. Please answer the following questions based on how you would respond to this doctor.</div>
   <div class="stim-foot">For emergencies, call 911.</div>
   <div class="stim-script" style="display:none"><div data-who="p">I&#x27;ve been having some symptoms that are a bit embarrassing to bring up. I think it might be something to do with sexual health, and I&#x27;m not really sure what to do about it.</div><div data-who="d">Hello, I am an AI doctor. Thank you for reaching out. I understand this can be uncomfortable to talk about, and concerns like this are very common. Please describe how long your symptoms have lasted and what you have noticed so far.</div><div data-who="p">It&#x27;s been a few days. I&#x27;m a little uncomfortable getting into the details, to be honest, but I do think I should get it looked at.</div><div data-who="d">That is completely okay. Please take your time. Seeking help is the right step. Please indicate whether you have any discharge, irritation, or pain when you urinate.</div><div data-who="p">Yeah, there&#x27;s some irritation and a bit of discharge. No real pain, though.</div><div data-who="d">Thank you for sharing this. I appreciate your openness. Based on what you have described, I recommend getting tested for STIs. You are taking good care of your health.</div></div>
 </div>
@@ -59,7 +58,7 @@ function stimPlay(root, onDone){
     var row=el('div','stim-drow');var av=el('div','stim-av stim-av-sm');var img=document.createElement('img');img.src=avatar;img.alt='';av.appendChild(img);
     var col=el('div','stim-dcol');col.appendChild(el('div','stim-sender',sender));col.appendChild(inner);row.appendChild(av);row.appendChild(col);thread.appendChild(row);return row;}
   function next(){
-    if(i>=steps.length){draft.textContent='';btn.disabled=true;hint.style.display='none';closing.style.display='block';if(onDone)onDone();return;}
+    if(i>=steps.length){draft.textContent='';btn.disabled=true;hint.style.display='none';if(closing)closing.style.display='block';if(onDone)onDone();return;}
     var s=steps[i];
     if(s.who==='p'){draft.textContent=s.t;btn.disabled=false;hint.style.display='block';}
     else{
@@ -73,4 +72,14 @@ function stimPlay(root, onDone){
   next();
 }
 
-stimPlay(document);</script></body></html>
+stimPlay(document, function(){
+  try{ parent.postMessage({stimDone:true}, "*"); }catch(e){}
+});
+function stimSendHeight(){
+  try{ parent.postMessage({stimHeight: document.documentElement.scrollHeight}, "*"); }catch(e){}
+}
+if (window.ResizeObserver) { new ResizeObserver(stimSendHeight).observe(document.body); }
+else { setInterval(stimSendHeight, 500); }
+window.addEventListener("load", stimSendHeight);
+stimSendHeight();
+</script></body></html>
